@@ -1,10 +1,22 @@
 # Gesture Controlled Robotic Arm
 
 ## Overview
-This project implements real-time control of a robotic arm using hand gestures. MediaPipe on Windows captures gestures and sends data via UDP to a ROS2 node on Ubuntu, which controls a simulated Franka FR3 robot in RViz.
+This project implements real-time control of a robotic arm using hand gestures. A Windows system captures gestures using MediaPipe and sends data via UDP to a ROS2 node on Ubuntu, which controls a simulated Franka FR3 robot in RViz.
+
+---
 
 ## System Flow
 Camera → MediaPipe → Gesture Data → UDP → ROS2 Node → /joint_states → RViz
+
+---
+
+## Features
+- Wrist-based gesture control (left/right and up/down)
+- Smooth motion using filtering and calibration
+- Real-time communication using UDP
+- Gripper control using pinch detection
+
+---
 
 ## Technologies Used
 - Python  
@@ -14,42 +26,93 @@ Camera → MediaPipe → Gesture Data → UDP → ROS2 Node → /joint_states �
 - RViz  
 - UDP Socket Programming  
 
+---
+
 ## Robot
 - Franka FR3  
 - 7 Degrees of Freedom  
-- Controlled using JointState  
+- Controlled using `/joint_states`  
 
-## Gesture Control
-- Wrist tilt (left/right) → base movement  
-- Index finger movement (up/down) → arm movement  
-- Finger distance(thumb and index) → gripper control
-- Move palm back and forwards → arm movement
+---
+
+## Gesture Mapping
+- Wrist tilt (left/right) → base rotation  
+- Index finger vertical movement → arm up/down  
+- Thumb–index distance → gripper open/close  
+
+---
 
 ## Files
-- gesture_windows.py – gesture detection  
-- ros_receiver.py – ROS2 node  
+- `gesture_windows.py` — gesture detection and UDP sender  
+- `ros_receiver.py` — ROS2 node for robot control  
 
-## How to Run
+---
 
-### Ubuntu
-terminal 1:
+## Prerequisites
+
+### Windows
+- Python 3.10 / 3.11  
+- Install dependencies:
+
+pip install opencv-python mediapipe numpy
+
+
+---
+
+### Ubuntu (ROS2)
+- Ubuntu 22.04  
+- ROS2 Humble installed  
+
+Install required packages:
+
+sudo apt update
+sudo apt install ros-humble-desktop
+
+
+Source ROS:
+
+source /opt/ros/humble/setup.bash
+
+
+---
+
+## Setup and Execution
+
+### Step 1: Run Robot in RViz (Ubuntu)
+
 source /opt/ros/humble/setup.bash
 ros2 run robot_state_publisher robot_state_publisher fr3.urdf
-terminal 2:
 rviz2
-terminal 3:
+
+
+In RViz:
+- Add **RobotModel**
+- Set Fixed Frame to `base`
+
+---
+
+### Step 2: Run ROS Receiver (Ubuntu)
+
 python3 ros_receiver.py
 
 
-### Windows
+---
+
+### Step 3: Run Gesture Control (Windows)
 
 python gesture_windows.py
 
 
-## Key Points
-- Uses joint-space control (no kinematics)  
-- Real-time communication using UDP  
-- Stable control using calibration and filtering  
+- Press **SPACE** to calibrate  
+- Move wrist → control robot  
+- Press **Q** to quit  
 
-## Conclusion
-This project demonstrates real-time human-robot interaction using gesture control.
+---
+
+## Key Implementation Details
+- Uses **orientation vector (wrist → middle finger)** for control  
+- Applies **deadzone and smoothing** to reduce noise  
+- Uses **absolute joint mapping** to prevent drift  
+- Enforces **joint limits from URDF**  
+
+---
